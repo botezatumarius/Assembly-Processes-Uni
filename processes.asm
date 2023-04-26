@@ -21,6 +21,11 @@ db "Exit (e)",0xA,
 db "Your choice: ",0xA,0xD
 prompt_len equ $- menu
 
+seed dd 0
+output db 0
+buf db 2, 0
+
+format db "Value in eax: %d", 0xA, 0 ; define a format string for printf
 
 invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
 invalid_len equ $- invalid_input
@@ -85,6 +90,31 @@ _start:
     jmp _start
 
 process_0:
+     ; Set up seed for random number generator
+    mov eax, 60
+    mov [seed], eax
+
+    ; Generate random number between 0 and 32767
+    mov eax, [seed]
+    mov ecx, 1103515245
+    mul ecx
+    add eax, 12345
+    mov [seed], eax
+
+    ; Divide random number by 582 to get a number between 0 and 56
+    mov ebx, 582
+    xor edx, edx
+    mov eax, [seed]
+    div ebx
+
+    ; Add 1 to the result to get a number between 1 and 56
+    add eax, 1
+
+    ; Show quotient
+        
+
+    jmp end
+
 
 process_1:
     mov eax, SYS_WRITE
