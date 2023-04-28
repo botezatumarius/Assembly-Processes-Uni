@@ -152,6 +152,17 @@ process_0:
     mov [seed], rdx
     mov rax, [seed]
 
+    ; modify range 0-2047 to 0-55
+    xor rdx,rdx
+    mov rcx, 37
+    div rcx
+
+    ;modify range from 0-55 to 1-56
+    add rax, 1
+
+    mov rcx, [raxCopy]
+    mov [seed], rcx
+
     call _printRAX
     jmp end
 
