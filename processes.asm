@@ -7,7 +7,7 @@ STDOUT equ 1
 
 section .data
 menu db "Choose one of the following processes:",0xA,
-db "Process 0",0xA,
+db "Process 0 : Random number generator",0xA,
 db "Process 1",0xA,
 db "Process 2",0xA,
 db "Process 3",0xA,
@@ -24,6 +24,9 @@ prompt_len equ $- menu
 invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
 invalid_len equ $- invalid_input
 
+rand_numb db "Random numbers: ",0xA,0xD
+rand_len equ $- rand_numb
+
 try db "Testing",0xA,0xD
 try_len equ $- try
 
@@ -33,6 +36,7 @@ section .bss
     digitSpacePos resb 8
     seed resb 32
     raxCopy resb 64
+    rdiCopy resb 64
 
 section .text
 global _start
@@ -88,83 +92,99 @@ _start:
     jmp _start
 
 process_0:
-    mov eax, 60
+    mov eax, SYS_WRITE
+    mov ebx, STDOUT
+    mov ecx, rand_numb
+    mov edx, rand_len
+    int 0x80
+    mov rdi, 0
+    mov [rdiCopy], rdi
+    mov eax, 69
     mov [seed],eax
-    ; Load seed into rax
-    mov rax, [seed]
-    ; Calculate next = next * 1103515245 + 12345
-    mov rbx, 1103515245
-    mul rbx
-    add rax, 12345
-    ; Store next in next copy
-    mov [raxCopy], rax
-    ; Calculate result = (unsigned int) (next / 65536) % 2048
-    mov rcx, 65536
-    xor rdx, rdx
-    div rcx
-    mov rcx, 2048
-    xor rdx,rdx
-    div rcx
-    mov rax, [raxCopy]
-    mov [seed], rdx
-    ; Calculate next = next * 1103515245 + 12345
-    mov rbx, 1103515245
-    mul rbx
-    add rax, 12345
-    ; Calculate result <<= 10
-    mov [raxCopy], rax
-    mov rax, [seed]
-    shl rax, 10
-    mov [seed], rax
-    ; Store next copy in next
-    mov rax, [raxCopy]
-    ; Calculate result ^= (unsigned int) (next / 65536) % 2048
-    mov rcx, 65536
-    xor rdx, rdx
-    div rcx
-    mov rcx, 2048
-    xor rdx,rdx
-    div rcx
-    mov rax, [seed]
-    xor rax, rdx
-    mov [seed], rdx
-    mov rax, [raxCopy]
-    ; Calculate next = next * 1103515245 + 12345
-    mov rbx, 1103515245
-    mul rbx
-    add rax, 12345
-    ; Calculate result <<= 10
-    mov [raxCopy], rax
-    mov rax, [seed]
-    shl rax, 10
-    mov [seed], rax
-    ; Store next copy in next
-    mov rax, [raxCopy]
-    ; Calculate result ^= (unsigned int) (next / 65536) % 2048
-    mov rcx, 65536
-    xor rdx, rdx
-    div rcx
-    mov rcx, 2048
-    xor rdx,rdx
-    div rcx
-    mov rax, [seed]
-    xor rax, rdx
-    mov [seed], rdx
-    mov rax, [seed]
+    rngLoop:
+        mov rdi, [rdiCopy]
+        inc rdi
+        mov [rdiCopy], rdi
+        ; Load seed into rax
+        mov rax, [seed]
+        ; Calculate next = next * 1103515245 + 12345
+        mov rbx, 1103515245
+        mul rbx
+        add rax, 12345
+        ; Store next in next copy
+        mov [raxCopy], rax
+        ; Calculate result = (unsigned int) (next / 65536) % 2048
+        mov rcx, 65536
+        xor rdx, rdx
+        div rcx
+        mov rcx, 2048
+        xor rdx,rdx
+        div rcx
+        mov rax, [raxCopy]
+        mov [seed], rdx
+        ; Calculate next = next * 1103515245 + 12345
+        mov rbx, 1103515245
+        mul rbx
+        add rax, 12345
+        ; Calculate result <<= 10
+        mov [raxCopy], rax
+        mov rax, [seed]
+        shl rax, 10
+        mov [seed], rax
+        ; Store next copy in next
+        mov rax, [raxCopy]
+        ; Calculate result ^= (unsigned int) (next / 65536) % 2048
+        mov rcx, 65536
+        xor rdx, rdx
+        div rcx
+        mov rcx, 2048
+        xor rdx,rdx
+        div rcx
+        mov rax, [seed]
+        xor rax, rdx
+        mov [seed], rdx
+        mov rax, [raxCopy]
+        ; Calculate next = next * 1103515245 + 12345
+        mov rbx, 1103515245
+        mul rbx
+        add rax, 12345
+        ; Calculate result <<= 10
+        mov [raxCopy], rax
+        mov rax, [seed]
+        shl rax, 10
+        mov [seed], rax
+        ; Store next copy in next
+        mov rax, [raxCopy]
+        ; Calculate result ^= (unsigned int) (next / 65536) % 2048
+        mov rcx, 65536
+        xor rdx, rdx
+        div rcx
+        mov rcx, 2048
+        xor rdx,rdx
+        div rcx
+        mov rax, [seed]
+        xor rax, rdx
+        mov [seed], rdx
+        mov rax, [seed]
 
-    ; modify range 0-2047 to 0-55
-    xor rdx,rdx
-    mov rcx, 37
-    div rcx
+        ; modify range 0-2047 to 0-55
+        xor rdx,rdx
+        mov rcx, 37
+        div rcx
 
-    ;modify range from 0-55 to 1-56
-    add rax, 1
+        ;modify range from 0-55 to 1-56
+        add rax, 1
 
-    mov rcx, [raxCopy]
-    mov [seed], rcx
+        mov rcx, [raxCopy]
+        mov [seed], rcx
 
-    call _printRAX
-    jmp end
+        call _printRAX
+
+        mov rdi, [rdiCopy]
+        cmp rdi, 9
+        jl rngLoop
+
+        jmp end
 
 
 process_1:
@@ -193,12 +213,6 @@ process_9:
 
 process_exit:
     jmp end
-
-end:
-    ; exit program
-    mov rax, 60
-    xor rbx, rbx
-    syscall
 
 _printRAX:
     mov rcx, digitSpace
@@ -240,4 +254,10 @@ _printRAXLoop2:
     jge _printRAXLoop2
  
     ret
+
+end:
+    ; exit program
+    mov rax, 60
+    xor rbx, rbx
+    syscall
     
