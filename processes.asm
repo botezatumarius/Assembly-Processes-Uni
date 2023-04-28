@@ -21,12 +21,6 @@ db "Exit (e)",0xA,
 db "Your choice: ",0xA,0xD
 prompt_len equ $- menu
 
-seed dd 0
-output db 0
-buf db 2, 0
-
-format db "Value in eax: %d", 0xA, 0 ; define a format string for printf
-
 invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
 invalid_len equ $- invalid_input
 
@@ -35,6 +29,10 @@ try_len equ $- try
 
 section .bss
     num1 resb 4
+    digitSpace resb 100
+    digitSpacePos resb 8
+    seed resb 32
+    raxCopy resb 64
 
 section .text
 global _start
@@ -90,29 +88,71 @@ _start:
     jmp _start
 
 process_0:
-     ; Set up seed for random number generator
     mov eax, 60
-    mov [seed], eax
+    mov [seed],eax
+    ; Load seed into rax
+    mov rax, [seed]
+    ; Calculate next = next * 1103515245 + 12345
+    mov rbx, 1103515245
+    mul rbx
+    add rax, 12345
+    ; Store next in next copy
+    mov [raxCopy], rax
+    ; Calculate result = (unsigned int) (next / 65536) % 2048
+    mov rcx, 65536
+    xor rdx, rdx
+    div rcx
+    mov rcx, 2048
+    xor rdx,rdx
+    div rcx
+    mov rax, [raxCopy]
+    mov [seed], rdx
+    ; Calculate next = next * 1103515245 + 12345
+    mov rbx, 1103515245
+    mul rbx
+    add rax, 12345
+    ; Calculate result <<= 10
+    mov [raxCopy], rax
+    mov rax, [seed]
+    shl rax, 10
+    mov [seed], rax
+    ; Store next copy in next
+    mov rax, [raxCopy]
+    ; Calculate result ^= (unsigned int) (next / 65536) % 2048
+    mov rcx, 65536
+    xor rdx, rdx
+    div rcx
+    mov rcx, 2048
+    xor rdx,rdx
+    div rcx
+    mov rax, [seed]
+    xor rax, rdx
+    mov [seed], rdx
+    mov rax, [raxCopy]
+    ; Calculate next = next * 1103515245 + 12345
+    mov rbx, 1103515245
+    mul rbx
+    add rax, 12345
+    ; Calculate result <<= 10
+    mov [raxCopy], rax
+    mov rax, [seed]
+    shl rax, 10
+    mov [seed], rax
+    ; Store next copy in next
+    mov rax, [raxCopy]
+    ; Calculate result ^= (unsigned int) (next / 65536) % 2048
+    mov rcx, 65536
+    xor rdx, rdx
+    div rcx
+    mov rcx, 2048
+    xor rdx,rdx
+    div rcx
+    mov rax, [seed]
+    xor rax, rdx
+    mov [seed], rdx
+    mov rax, [seed]
 
-    ; Generate random number between 0 and 32767
-    mov eax, [seed]
-    mov ecx, 1103515245
-    mul ecx
-    add eax, 12345
-    mov [seed], eax
-
-    ; Divide random number by 582 to get a number between 0 and 56
-    mov ebx, 582
-    xor edx, edx
-    mov eax, [seed]
-    div ebx
-
-    ; Add 1 to the result to get a number between 1 and 56
-    add eax, 1
-
-    ; Show quotient
-        
-
+    call _printRAX
     jmp end
 
 
@@ -149,4 +189,44 @@ end:
     xor rbx, rbx
     syscall
 
+_printRAX:
+    mov rcx, digitSpace
+    mov rbx, 10
+    mov [rcx], rbx
+    inc rcx
+    mov [digitSpacePos], rcx
+ 
+_printRAXLoop:
+    mov rdx, 0
+    mov rbx, 10
+    div rbx
+    push rax
+    add rdx, 48
+ 
+    mov rcx, [digitSpacePos]
+    mov [rcx], dl
+    inc rcx
+    mov [digitSpacePos], rcx
+    
+    pop rax
+    cmp rax, 0
+    jne _printRAXLoop
+ 
+_printRAXLoop2:
+    mov rcx, [digitSpacePos]
+ 
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, rcx
+    mov rdx, 1
+    syscall
+ 
+    mov rcx, [digitSpacePos]
+    dec rcx
+    mov [digitSpacePos], rcx
+ 
+    cmp rcx, digitSpace
+    jge _printRAXLoop2
+ 
+    ret
     
