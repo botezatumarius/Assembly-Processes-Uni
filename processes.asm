@@ -27,9 +27,6 @@ invalid_len equ $- invalid_input
 rand_numb db "Random numbers: ",0xA,0xD
 rand_len equ $- rand_numb
 
-try db "Testing",0xA,0xD
-try_len equ $- try
-
 section .bss
     num1 resb 4
     digitSpace resb 100
@@ -188,12 +185,6 @@ process_0:
 
 
 process_1:
-    mov eax, SYS_WRITE
-    mov ebx, STDOUT
-    mov ecx, try
-    mov edx, try_len
-    int 0x80
-    jmp end
 
 process_2:
     
