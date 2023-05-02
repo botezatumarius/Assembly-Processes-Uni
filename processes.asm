@@ -6,26 +6,30 @@ STDIN equ 0
 STDOUT equ 1
 
 section .data
-menu db "Choose one of the following processes:",0xA,
-db "Process 0 : Random number generator",0xA,
-db "Process 1",0xA,
-db "Process 2",0xA,
-db "Process 3",0xA,
-db "Process 4",0xA,
-db "Process 5",0xA,
-db "Process 6",0xA,
-db "Process 7",0xA,
-db "Process 8",0xA,
-db "Process 9",0xA,
-db "Exit (e)",0xA,
-db "Your choice: ",0xA,0xD
-prompt_len equ $- menu
+    menu db "Choose one of the following processes:",0xA,
+    db "Process 0 : Random number generator",0xA,
+    db "Process 1 : Concatenate two strings",0xA,
+    db "Process 2",0xA,
+    db "Process 3",0xA,
+    db "Process 4",0xA,
+    db "Process 5",0xA,
+    db "Process 6",0xA,
+    db "Process 7",0xA,
+    db "Process 8",0xA,
+    db "Process 9",0xA,
+    db "Exit (e)",0xA,
+    db "Your choice: ",0xA,0xD
+    prompt_len equ $- menu
 
-invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
-invalid_len equ $- invalid_input
+    invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
+    invalid_len equ $- invalid_input
 
-rand_numb db "Random numbers: ",0xA,0xD
-rand_len equ $- rand_numb
+    inputFirstString db "Input the first string",10,0
+    inputSecondString db "Input the second string",10,0
+    concatenatedStrings db "Concatenated strings:",10,0
+
+    rand_numb db "Random numbers: ",0xA,0xD
+    rand_len equ $- rand_numb
 
 section .bss
     num1 resb 4
@@ -34,6 +38,8 @@ section .bss
     seed resb 32
     raxCopy resb 64
     rdiCopy resb 64
+    firstString resb 100
+    secondString resb 100
 
 section .text
 global _start
@@ -185,6 +191,32 @@ process_0:
 
 
 process_1:
+    mov rax, inputFirstString
+    call _print
+
+    mov eax, SYS_READ
+    mov ebx, STDIN
+    mov ecx, firstString
+    mov edx, 100
+    int 0x80
+
+    mov rax, inputSecondString
+    call _print
+
+    mov eax, SYS_READ
+    mov ebx, STDIN
+    mov ecx, secondString
+    mov edx, 100
+    int 0x80
+
+    mov rax, concatenatedStrings
+    call _print
+    mov rax, firstString
+    call _print
+    mov rax, secondString
+    call _print
+
+    jmp end
 
 process_2:
     
@@ -243,6 +275,26 @@ _printRAXLoop2:
  
     cmp rcx, digitSpace
     jge _printRAXLoop2
+ 
+    ret
+
+;input: rax as pointer to string
+;output: print string at rax
+_print:
+    push rax
+    mov rbx, 0
+_printLoop:
+    inc rax
+    inc rbx
+    mov cl, [rax]
+    cmp cl, 0
+    jne _printLoop
+ 
+    mov rax, 1
+    mov rdi, 1
+    pop rsi
+    mov rdx, rbx
+    syscall
  
     ret
 
