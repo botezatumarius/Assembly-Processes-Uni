@@ -194,25 +194,27 @@ process_1:
     mov rax, inputFirstString
     call _print
 
-    mov eax, SYS_READ
-    mov ebx, STDIN
-    mov ecx, firstString
-    mov edx, 100
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, firstString
+    mov rdx, 100
     int 0x80
 
     mov rax, inputSecondString
     call _print
 
-    mov eax, SYS_READ
-    mov ebx, STDIN
-    mov ecx, secondString
-    mov edx, 100
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, secondString
+    mov rdx, 100
     int 0x80
+
+    mov byte [firstString + 100 - 4], 0
 
     mov rax, concatenatedStrings
     call _print
     mov rax, firstString
-    call _print
+    call _printWithoutNewline
     mov rax, secondString
     call _print
 
@@ -290,6 +292,25 @@ _printLoop:
     cmp cl, 0
     jne _printLoop
  
+    mov rax, 1
+    mov rdi, 1
+    pop rsi
+    mov rdx, rbx
+    syscall
+ 
+    ret
+
+_printWithoutNewline:
+    push rax
+    mov rbx, 0
+_printWithoutNewlineLoop:
+    inc rax
+    inc rbx
+    mov cl, [rax]
+    cmp cl, 0
+    jne _printWithoutNewlineLoop
+
+    sub rbx, 1
     mov rax, 1
     mov rdi, 1
     pop rsi
