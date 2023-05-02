@@ -9,7 +9,7 @@ section .data
     menu db "Choose one of the following processes:",0xA,
     db "Process 0 : Random number generator",0xA,
     db "Process 1 : Concatenate two strings",0xA,
-    db "Process 2",0xA,
+    db "Process 2 : Convert a string to lower case",0xA,
     db "Process 3",0xA,
     db "Process 4",0xA,
     db "Process 5",0xA,
@@ -26,6 +26,7 @@ section .data
 
     inputFirstString db "Input the first string",10,0
     inputSecondString db "Input the second string",10,0
+    inputUpcaseString db "Input the string to convert to lower case",10,0
     concatenatedStrings db "Concatenated strings:",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
@@ -221,6 +222,21 @@ process_1:
     jmp end
 
 process_2:
+    mov rax, inputUpcaseString
+    call _print
+
+    mov rax, firstString
+    call _clearString
+
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, firstString
+    mov rdx, 100
+    int 0x80
+    
+
+    jmp end
+
     
 process_3:
     
@@ -280,8 +296,6 @@ _printRAXLoop2:
  
     ret
 
-;input: rax as pointer to string
-;output: print string at rax
 _print:
     push rax
     mov rbx, 0
@@ -317,6 +331,14 @@ _printWithoutNewlineLoop:
     mov rdx, rbx
     syscall
  
+    ret
+
+_clearString:
+    mov byte [rax], 0
+    inc rax
+    cmp byte [rax], 0
+    jne _clearString
+
     ret
 
 end:
