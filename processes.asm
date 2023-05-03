@@ -28,6 +28,7 @@ section .data
     inputSecondString db "Input the second string",10,0
     inputUpcaseString db "Input the string to convert to lower case",10,0
     concatenatedStrings db "Concatenated strings:",10,0
+    finishedLowcaseString db "String converted to lower case",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
@@ -233,7 +234,49 @@ process_2:
     mov rcx, firstString
     mov rdx, 100
     int 0x80
+
+    mov rax, finishedLowcaseString
+    call _print
     
+    mov rax, firstString
+    checkValue:
+        cmp byte [rax], 65
+        jge checkValue2
+        cmp byte [rax], 0
+        je end
+
+        check:
+            push rax
+            mov rax, SYS_WRITE
+            mov rbx, STDOUT
+            pop rcx
+            mov rdx, 1
+            int 0x80
+            
+            mov rax,rcx
+            inc rax
+            jmp checkValue
+
+
+    checkValue2:
+        cmp byte [rax], 90
+        jle printLowcase
+        jmp check
+    
+    printLowcase:
+        push rax
+        mov rax, SYS_WRITE
+        mov rbx, STDOUT
+        pop rcx
+        add byte [rcx], 32
+        mov rdx, 1
+        int 0x80
+        
+        sub byte [rcx], 32
+        mov rax,rcx
+        inc rax
+        jmp checkValue
+
 
     jmp end
 
