@@ -10,7 +10,7 @@ section .data
     db "Process 0 : Random number generator",0xA,
     db "Process 1 : Concatenate two strings",0xA,
     db "Process 2 : Convert a string to lower case",0xA,
-    db "Process 3",0xA,
+    db "Process 3 : Calculate the length of a string",0xA,
     db "Process 4",0xA,
     db "Process 5",0xA,
     db "Process 6",0xA,
@@ -29,6 +29,8 @@ section .data
     inputUpcaseString db "Input the string to convert to lower case",10,0
     concatenatedStrings db "Concatenated strings:",10,0
     finishedLowcaseString db "String converted to lower case",10,0
+    calculateString db "Input the string",10,0
+    lengthOfString db "The length of the string is ",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
@@ -282,7 +284,36 @@ process_2:
 
     
 process_3:
-    
+    mov rax, calculateString
+    call _print
+    mov rax, firstString
+    call _clearString
+
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, firstString
+    mov rdx, 100
+    int 0x80
+
+    mov rax, lengthOfString
+    call _print
+
+    mov rax, firstString
+    mov rbx, 0 
+    calcLength:
+        cmp byte [rax],0
+        jne addToLength
+        mov rax, rbx
+        sub rax,1
+        call _printRAX
+        jmp end
+
+    addToLength:
+        inc rbx
+        inc rax
+        jmp calcLength
+
+    jmp end
 process_4:
 
 process_5:
