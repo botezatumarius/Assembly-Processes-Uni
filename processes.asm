@@ -11,7 +11,7 @@ section .data
     db "Process 1 : Concatenate two strings",0xA,
     db "Process 2 : Convert a string to lower case",0xA,
     db "Process 3 : Calculate the length of a string",0xA,
-    db "Process 4",0xA,
+    db "Process 4 : Inverting a string",0xA,
     db "Process 5",0xA,
     db "Process 6",0xA,
     db "Process 7",0xA,
@@ -31,6 +31,7 @@ section .data
     finishedLowcaseString db "String converted to lower case",10,0
     calculateString db "Input the string",10,0
     lengthOfString db "The length of the string is ",10,0
+    invertedString db "Inverted string is",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
@@ -43,6 +44,8 @@ section .bss
     raxCopy resb 64
     rdiCopy resb 64
     firstString resb 100
+    newLine resb 1
+    null resb 1
     secondString resb 100
 
 section .text
@@ -315,6 +318,46 @@ process_3:
 
     jmp end
 process_4:
+    mov rax, calculateString
+    call _print
+    mov rax, firstString
+    call _clearString
+
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, firstString
+    mov rdx, 100
+    int 0x80
+
+    mov rax, invertedString
+    call _print
+
+    mov byte [null], 0
+    mov byte [newLine], 10
+    push null
+    push newLine
+    mov rax, firstString
+    notNewline:
+        cmp byte [rax], 10
+        jne addStack
+        jmp printStack
+
+    addStack:
+        push rax
+        inc rax
+        jmp notNewline
+    
+    printStack:
+        mov rax, SYS_WRITE
+        mov rbx, STDOUT
+        pop rcx
+        mov rdx, 1
+        int 0x80
+        cmp rcx, 0
+        je end
+        jmp printStack
+
+
 
 process_5:
     
