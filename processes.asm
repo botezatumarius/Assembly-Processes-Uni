@@ -11,8 +11,8 @@ section .data
     db "Process 1 : Concatenate two strings",0xA,
     db "Process 2 : Convert a string to lower case",0xA,
     db "Process 3 : Calculate the length of a string",0xA,
-    db "Process 4 : Inverting a string",0xA,
-    db "Process 5",0xA,
+    db "Process 4 : Invert a string",0xA,
+    db "Process 5 : Calculate square root of a number",0xA,
     db "Process 6",0xA,
     db "Process 7",0xA,
     db "Process 8",0xA,
@@ -47,6 +47,7 @@ section .bss
     newLine resb 1
     null resb 1
     secondString resb 100
+    guess resb 64
 
 section .text
 global _start
@@ -360,6 +361,42 @@ process_4:
 
 
 process_5:
+    mov rbx, 0
+    mov rax, raxCopy
+    call _clearString 
+    mov rax, rdiCopy
+    call _clearString
+    mov rax, 32
+    mov byte [raxCopy],32
+    mov rcx, 2
+    mov [guess], rcx
+    newton:
+        mov rcx, [guess]
+        xor rdx,rdx
+        ; 1/2*(g1+ x/g1) = g2
+        div rcx
+        add rax, [guess]
+        xor rdx,rdx
+        mov rcx,2
+        div rcx
+        inc rbx
+        mov [guess], rax
+        mov rax, 32
+        cmp rbx, 100
+        jle newton
+    
+    mov [rdiCopy],rdx
+    mov rax, [guess]
+    call _printRAX
+    mov rdx,[rdiCopy]
+    cmp rdx,0
+    jne printRemainder
+    jmp end
+
+    printRemainder:
+        mov rax, rdx
+        call _printRAX
+        jmp end
     
 process_6:
     
