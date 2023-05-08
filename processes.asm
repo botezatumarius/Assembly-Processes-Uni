@@ -21,6 +21,9 @@ section .data
     db "Your choice: ",0xA,0xD
     prompt_len equ $- menu
 
+    val dq 6.7   ; define quadword (double precision)
+    format db "%lf",10,0
+
     invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
     invalid_len equ $- invalid_input
 
@@ -48,10 +51,13 @@ section .bss
     null resb 1
     secondString resb 100
     guess resb 64
+    res resq 1      ; reserve 1 quadword for result
 
 section .text
-global _start
+extern printf
+global main, _start
 
+main:
 _start:
     ; display the menu
     mov eax, 4
@@ -399,8 +405,25 @@ process_5:
         jmp end
     
 process_6:
+    ; load value into st(0)
+	fld qword [val]  ; treat val as an address to a qword
+	; compute square root of st(0) and store the result in st(0)
+	fsqrt
+	; store st(0) at res, and pop it off the x87 stack
+	fstp qword [res]
+	; the FPU stack is now empty again
+    
+    mov rdi, format
+    movsd xmm0, qword [rel val]  ; load floating-point value 12.3
+    mov rax,1
+    call printf
+    
+
+    jmp end
     
 process_7:
+ 
+    jmp end
     
 process_8:
     
