@@ -21,7 +21,6 @@ section .data
     db "Your choice: ",0xA,0xD
     prompt_len equ $- menu
 
-    val dq 6.7   ; define quadword (double precision)
     format db "%lf",10,0
 
     invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
@@ -35,6 +34,7 @@ section .data
     calculateString db "Input the string",10,0
     lengthOfString db "The length of the string is ",10,0
     invertedString db "Inverted string is",10,0
+    inputSquareRoot db "Input number to find square root of",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
@@ -51,7 +51,9 @@ section .bss
     null resb 1
     secondString resb 100
     guess resb 64
-    res resq 1      ; reserve 1 quadword for result
+    res resq 1      
+    val resq 1
+    input resb 64   
 
 section .text
 extern printf
@@ -367,44 +369,17 @@ process_4:
 
 
 process_5:
-    mov rbx, 0
-    mov rax, raxCopy
-    call _clearString 
-    mov rax, rdiCopy
-    call _clearString
-    mov rax, 32
-    mov byte [raxCopy],32
-    mov rcx, 2
-    mov [guess], rcx
-    newton:
-        mov rcx, [guess]
-        xor rdx,rdx
-        ; 1/2*(g1+ x/g1) = g2
-        div rcx
-        add rax, [guess]
-        xor rdx,rdx
-        mov rcx,2
-        div rcx
-        inc rbx
-        mov [guess], rax
-        mov rax, 32
-        cmp rbx, 100
-        jle newton
+    mov rax, inputSquareRoot
+    call _print
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, val
+    mov rdx, input
+    int 0x80
+    ; convert user input to floating-point number
+    fld qword [input] ; load user input as a floating-point number
+    fstp qword [val]  ; store the value in val
     
-    mov [rdiCopy],rdx
-    mov rax, [guess]
-    call _printRAX
-    mov rdx,[rdiCopy]
-    cmp rdx,0
-    jne printRemainder
-    jmp end
-
-    printRemainder:
-        mov rax, rdx
-        call _printRAX
-        jmp end
-    
-process_6:
     ; load value into st(0)
 	fld qword [val]  ; treat val as an address to a qword
 	; compute square root of st(0) and store the result in st(0)
@@ -414,12 +389,14 @@ process_6:
 	; the FPU stack is now empty again
     
     mov rdi, format
-    movsd xmm0, qword [rel val]  ; load floating-point value 12.3
+    movsd xmm0, qword [rel val] 
     mov rax,1
     call printf
     
 
     jmp end
+    
+process_6:
     
 process_7:
  
