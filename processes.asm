@@ -39,6 +39,7 @@ section .data
     invertedString db "Inverted string is",10,0
     inputSquareRoot db "Input number to find square root of",10,0
     inputFactorial db "Input number to find factorial of",10,0
+    foundFactorial db "The factorial is ",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
@@ -394,15 +395,30 @@ process_5:
 process_6:
     mov rax, inputFactorial
     call _print
-    mov rax, firstString
+    mov rax, number
     call _clearString
 
-    mov rax, SYS_READ
-    mov rbx, STDIN
-    mov rcx, firstString
-    mov rdx, 100
-    int 0x80
+    mov rax,0
+    lea rdi, [format2]
+    lea rsi, [number]
+    call scanf
+    mov ebx, [number]
 
+    mov rbx, 0
+    mov rax, 1
+    factorialLoop:
+        inc rbx
+        mul rbx
+        cmp rbx, [number]
+        jl factorialLoop
+    
+    mov [raxCopy], rax
+    mov rax, foundFactorial
+    call _print
+    mov rax, [raxCopy]
+    call _printRAX
+
+    jmp end
 
     
 process_7:
@@ -511,6 +527,10 @@ end:
     syscall
 
 change:
-    add rax, 4
+    cmp rax, 52
+    jle addVal
     jmp back
+    addVal:
+        add rax, 4
+        jmp back
     
