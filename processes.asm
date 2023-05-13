@@ -13,15 +13,17 @@ section .data
     db "Process 3 : Calculate the length of a string",0xA,
     db "Process 4 : Invert a string",0xA,
     db "Process 5 : Calculate square root of a number",0xA,
-    db "Process 6",0xA,
+    db "Process 6 : Calculate factorial of a number",0xA,
     db "Process 7",0xA,
     db "Process 8",0xA,
     db "Process 9",0xA,
-    db "Exit (e)",0xA,
+    db "Process 10",0xA,
+    db "Exit (11)",0xA,
     db "Your choice: ",0xA,0xD
     prompt_len equ $- menu
 
     format db "%lf",0
+    format2 db "%d",0
     msg2 db "Square root is : %lf",10,0
 
     invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
@@ -36,11 +38,13 @@ section .data
     lengthOfString db "The length of the string is ",10,0
     invertedString db "Inverted string is",10,0
     inputSquareRoot db "Input number to find square root of",10,0
+    inputFactorial db "Input number to find factorial of",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
 
 section .bss
+    number resb 32
     num1 resb 4
     digitSpace resb 100
     digitSpacePos resb 8
@@ -70,16 +74,11 @@ _start:
     mov edx, prompt_len
     int 0x80
 
-    mov eax, SYS_READ
-    mov ebx, STDIN
-    mov ecx, num1
-    mov edx, 4
-    int 0x80
-
-    mov byte [num1 + eax - 1], 0
-
-    mov ebx, [num1]
-    sub ebx, '0'
+    mov rax,0
+    lea rdi, [format2]
+    lea rsi, [number]
+    call scanf
+    mov ebx, [number]
     
     ; execute the chosen process
     cmp ebx, 0 
@@ -102,7 +101,9 @@ _start:
     je process_8
     cmp ebx, 9
     je process_9
-    cmp ebx, 53
+    cmp ebx, 10
+    je process_10
+    cmp ebx, 11
     je process_exit
 
     mov eax, SYS_WRITE
@@ -199,11 +200,14 @@ process_0:
         mov rcx, [raxCopy]
         mov [seed], rcx
 
-        call _printRAX
-
-        mov rdi, [rdiCopy]
-        cmp rdi, 9
-        jl rngLoop
+        cmp rdi, 10
+        je change
+        
+        back:    
+            call _printRAX
+            mov rdi, [rdiCopy]
+            cmp rdi, 10
+            jl rngLoop
 
         jmp end
 
@@ -388,6 +392,18 @@ process_5:
     jmp end
     
 process_6:
+    mov rax, inputFactorial
+    call _print
+    mov rax, firstString
+    call _clearString
+
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, firstString
+    mov rdx, 100
+    int 0x80
+
+
     
 process_7:
  
@@ -396,6 +412,8 @@ process_7:
 process_8:
     
 process_9:
+
+process_10:
 
 process_exit:
     jmp end
@@ -491,4 +509,8 @@ end:
     mov rax, 60
     xor rbx, rbx
     syscall
+
+change:
+    add rax, 4
+    jmp back
     
