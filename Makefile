@@ -1,6 +1,6 @@
-ASMSRC = test.asm
-OBJ = test.o
-EXE = test
+ASMSRC = processes.asm
+OBJ = processes.o
+EXE = processes
 
 all: $(EXE)
 

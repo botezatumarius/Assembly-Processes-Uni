@@ -1,5 +1,6 @@
 ; useful resources: https://www.youtube.com/watch?v=5eWiz3soaEM&t=180s
 ; https://soliduscode.com/nasm-x64-c-calling-convention/
+; https://stackoverflow.com/questions/39324596/why-am-i-getting-a-float-not-a-double-from-scanf#comment65982892_39324596
 
 SYS_EXIT equ 1
 SYS_READ equ 3

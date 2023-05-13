@@ -21,7 +21,8 @@ section .data
     db "Your choice: ",0xA,0xD
     prompt_len equ $- menu
 
-    format db "%lf",10,0
+    format db "%lf",0
+    msg2 db "Square root is : %lf",10,0
 
     invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
     invalid_len equ $- invalid_input
@@ -54,9 +55,10 @@ section .bss
     res resq 1      
     val resq 1
     input resb 64   
+    sqrnumber resq 1
 
 section .text
-extern printf
+extern printf, scanf
 global main, _start
 
 main:
@@ -371,28 +373,17 @@ process_4:
 process_5:
     mov rax, inputSquareRoot
     call _print
-    mov rax, SYS_READ
-    mov rbx, STDIN
-    mov rcx, val
-    mov rdx, input
-    int 0x80
-    ; convert user input to floating-point number
-    fld qword [input] ; load user input as a floating-point number
-    fstp qword [val]  ; store the value in val
-    
-    ; load value into st(0)
-	fld qword [val]  ; treat val as an address to a qword
-	; compute square root of st(0) and store the result in st(0)
-	fsqrt
-	; store st(0) at res, and pop it off the x87 stack
-	fstp qword [res]
-	; the FPU stack is now empty again
-    
-    mov rdi, format
-    movsd xmm0, qword [rel val] 
+
+    mov rax,1
+    lea rdi, [format]
+    lea rsi, [sqrnumber]
+    call scanf
+
+    movsd xmm0, [sqrnumber]
+    sqrtsd xmm0, xmm0
+    lea rdi, [msg2]
     mov rax,1
     call printf
-    
 
     jmp end
     
