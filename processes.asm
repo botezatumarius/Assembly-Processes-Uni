@@ -14,7 +14,7 @@ section .data
     db "Process 4 : Invert a string",0xA,
     db "Process 5 : Calculate square root of a number",0xA,
     db "Process 6 : Calculate factorial of a number",0xA,
-    db "Process 7",0xA,
+    db "Process 7 : Calculate sum of prime n natural numbers",0xA,
     db "Process 8",0xA,
     db "Process 9",0xA,
     db "Process 10",0xA,
@@ -40,12 +40,15 @@ section .data
     inputSquareRoot db "Input number to find square root of",10,0
     inputFactorial db "Input number to find factorial of",10,0
     foundFactorial db "The factorial is ",10,0
+    foundSumPrime db "The sum is",10,0
+    introduce db "Introduce n",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
 
 section .bss
     number resb 32
+    number2 resb 32
     num1 resb 4
     digitSpace resb 100
     digitSpacePos resb 8
@@ -422,6 +425,47 @@ process_6:
 
     
 process_7:
+    mov rax, introduce
+    call _print
+    mov rax, number
+    call _clearString
+    mov rax, seed
+    call _clearString
+
+    mov byte [number2],0
+    mov byte [seed], 0
+    mov rax,0
+    lea rdi, [format2]
+    lea rsi, [number]
+    call scanf
+    
+    mov rbx,1
+    sumFirstNPrimes:
+    inc rbx
+    mov rcx,2
+    cmp rbx, 2
+    je isPrime
+    findIfPrime:
+    xor rdx,rdx
+    mov rax, rbx
+    div rcx
+    cmp rdx, 0
+    je sumFirstNPrimes
+    inc rcx
+    cmp rcx, rbx
+    jl findIfPrime
+    
+    isPrime:    
+    add byte [number2], 1
+    add [seed], rbx
+    mov rax, [number2]
+    cmp rax, [number]
+    jl sumFirstNPrimes
+    xor rax,rax
+    mov rax, foundSumPrime
+    call _print
+    mov rax, [seed]
+    call _printRAX
  
     jmp end
     
