@@ -10,11 +10,11 @@ STDOUT equ 1
 
 section .data
     msg db "Hello World!",10,0
-    format db "%d",0
-    msg2 db "test %d",10,0
+    format db "%lf",0
+    msg2 db "%lf",10,0
 
 section .bss
-    number resb 4
+    number resq 1
 
 section .text
 extern printf, scanf, atof
@@ -25,14 +25,14 @@ _start:
     mov rax,0
     call printf
 
-    mov rax,0
+    mov rax,1
     lea rdi, [format]
     lea rsi, [number]
     call scanf
 
-    mov edx, [number]
+    movsd xmm0, [number]
     lea rdi, [msg2]
-    mov rax,0
+    mov rax,1
     call printf
 
 
