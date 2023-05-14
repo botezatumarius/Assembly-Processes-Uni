@@ -80,6 +80,12 @@ global main, _start
 
 main:
 _start:
+    mov byte [newLine], 10
+    mov rax, SYS_WRITE
+    mov rbx, STDOUT
+    mov rcx, newLine
+    mov rdx, 1
+    int 0x80
     ; display the menu
     mov eax, 4
     mov ebx, 1
@@ -222,7 +228,7 @@ process_0:
             cmp rdi, 10
             jl rngLoop
 
-        jmp end
+        jmp _start
 
 
 process_1:
@@ -253,7 +259,7 @@ process_1:
     mov rax, secondString
     call _print
 
-    jmp end
+    jmp _start
 
 process_2:
     mov rax, inputUpcaseString
@@ -276,7 +282,7 @@ process_2:
         cmp byte [rax], 65
         jge checkValue2
         cmp byte [rax], 0
-        je end
+        je _start
 
         check:
             push rax
@@ -311,7 +317,7 @@ process_2:
         jmp checkValue
 
 
-    jmp end
+    jmp _start
 
     
 process_3:
@@ -337,14 +343,14 @@ process_3:
         mov rax, rbx
         sub rax,1
         call _printRAX
-        jmp end
+        jmp _start
 
     addToLength:
         inc rbx
         inc rax
         jmp calcLength
 
-    jmp end
+    jmp _start
 process_4:
     mov rax, calculateString
     call _print
@@ -382,8 +388,12 @@ process_4:
         mov rdx, 1
         int 0x80
         cmp rcx, 0
-        je end
+        je EmptyStack
         jmp printStack
+    
+    EmptyStack:
+        pop rcx
+        jmp _start
 
 
 
@@ -402,7 +412,7 @@ process_5:
     mov rax,1
     call printf
 
-    jmp end
+    jmp _start
     
 process_6:
     mov rax, inputFactorial
@@ -430,7 +440,7 @@ process_6:
     mov rax, [raxCopy]
     call _printRAX
 
-    jmp end
+    jmp _start
 
     
 process_7:
@@ -476,7 +486,7 @@ process_7:
     mov rax, [seed]
     call _printRAX
  
-    jmp end
+    jmp _start
     
 process_8:
     mov rax, introduce
@@ -521,7 +531,7 @@ process_8:
     mov rax, [seed]
     call _printRAX
  
-    jmp end
+    jmp _start
     
 process_9:
     mov rax, listNr
@@ -587,7 +597,7 @@ process_9:
 
 
 
-    jmp end
+    jmp _start
 
 process_10:
     mov rax, calculateString
@@ -634,7 +644,7 @@ process_10:
         mov rcx, newLine
         mov rdx, 1
         int 0x80
-        jmp end
+        jmp _start
 
 
 process_exit:
