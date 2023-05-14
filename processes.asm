@@ -16,7 +16,7 @@ section .data
     db "Process 6 : Calculate factorial of a number",0xA,
     db "Process 7 : Calculate sum of prime n natural numbers",0xA,
     db "Process 8 : Calculate sum of prime n odd numbers",0xA,
-    db "Process 9",0xA,
+    db "Process 9 : Remove an element from a list of numbers",0xA,
     db "Process 10",0xA,
     db "Exit (11)",0xA,
     db "Your choice: ",0xA,0xD
@@ -25,6 +25,8 @@ section .data
     format db "%lf",0
     format2 db "%d",0
     msg2 db "Square root is : %lf",10,0
+    msg3 db "%d",10,0
+    myArray times 32 dq 200
 
     invalid_input db "Invalid input. Please enter a number from 0 to 9 or e to exit.",0xA,0xD
     invalid_len equ $- invalid_input
@@ -42,6 +44,10 @@ section .data
     foundFactorial db "The factorial is ",10,0
     foundSumPrime db "The sum is",10,0
     introduce db "Introduce n",10,0
+    listNr db "How long is the list?",10,0
+    inputList db "Input numbers",10,0
+    removeElement db "Input element to remove",10,0
+    removedElement db "List with removed element",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
@@ -50,6 +56,7 @@ section .data
 section .bss
     number resb 32
     number2 resb 32
+    number3 resb 32
     num1 resb 4
     digitSpace resb 100
     digitSpacePos resb 8
@@ -516,6 +523,70 @@ process_8:
     jmp end
     
 process_9:
+    mov rax, listNr
+    call _print
+    mov rax, raxCopy
+    call _clearString
+    mov rax, number
+    call _clearString
+    mov rax, number2
+    call _clearString
+
+    mov rax,0
+    lea rdi, [format2]
+    lea rsi, [number]
+    call scanf
+    mov rax, inputList
+    call _print
+    
+    mov byte [raxCopy],1
+    inputListNr:
+        mov rax,0
+        lea rdi, [format2]
+        lea rsi, [number2]
+        call scanf
+        mov rax, [number2]
+        mov rdx, [raxCopy]
+        sub rdx, 1
+        mov [myArray + rdx*8], rax
+        inc rdx 
+        inc rdx
+        mov [raxCopy], rdx
+        cmp rdx, [number]
+        jle inputListNr
+
+    mov rax, removeElement
+    call _print
+
+    mov rax,0
+    lea rdi, [format2]
+    lea rsi, [number3]
+    call scanf
+    xor rcx,rcx
+    xor rdx, rdx
+
+    mov rax, removedElement
+    call _print
+
+    mov rbx,0
+    checkList:
+    mov rax, [myArray + rbx*8] 
+    cmp rax, [number3]
+    jne dontRemove
+    jmp nextElement
+    dontRemove:
+        mov rsi, [myArray + rbx*8]
+        lea rdi, [msg3]
+        mov rax,0
+        call printf
+        nextElement:
+            inc rbx
+            cmp rbx, [number]
+            jl checkList
+
+
+
+    jmp end
 
 process_10:
 
