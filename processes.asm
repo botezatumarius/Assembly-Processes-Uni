@@ -17,7 +17,7 @@ section .data
     db "Process 7 : Calculate sum of prime n natural numbers",0xA,
     db "Process 8 : Calculate sum of prime n odd numbers",0xA,
     db "Process 9 : Remove an element from a list of numbers",0xA,
-    db "Process 10",0xA,
+    db "Process 10 : Remove spaces from a string",0xA,
     db "Exit (11)",0xA,
     db "Your choice: ",0xA,0xD
     prompt_len equ $- menu
@@ -48,6 +48,7 @@ section .data
     inputList db "Input numbers",10,0
     removeElement db "Input element to remove",10,0
     removedElement db "List with removed element",10,0
+    stringNoSpace db "The string without spaces is",10,0
 
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
@@ -589,6 +590,52 @@ process_9:
     jmp end
 
 process_10:
+    mov rax, calculateString
+    call _print
+
+    mov rax, firstString
+    call _clearString
+    mov rax, raxCopy
+    call _clearString
+
+
+    mov rax, SYS_READ
+    mov rbx, STDIN
+    mov rcx, firstString
+    mov rdx, 64
+    int 0x80
+
+    mov rax, stringNoSpace
+    call _print
+
+    mov rax, firstString
+    sub rax, 1
+    mov [raxCopy],rax
+    verifyIfSpace:
+    mov rax, [raxCopy]
+    inc rax
+    mov [raxCopy], rax
+    cmp byte [rax],10
+    je done
+    cmp byte [rax], 32
+    jne printChar
+    jmp verifyIfSpace
+    printChar:
+        mov rax, SYS_WRITE
+        mov rbx, STDOUT
+        mov rcx, [raxCopy]
+        mov rdx, 1
+        int 0x80
+        jmp verifyIfSpace
+    done:
+        mov byte [newLine], 10
+        mov rax, SYS_WRITE
+        mov rbx, STDOUT
+        mov rcx, newLine
+        mov rdx, 1
+        int 0x80
+        jmp end
+
 
 process_exit:
     jmp end
