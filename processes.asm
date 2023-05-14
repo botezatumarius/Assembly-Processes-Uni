@@ -15,7 +15,7 @@ section .data
     db "Process 5 : Calculate square root of a number",0xA,
     db "Process 6 : Calculate factorial of a number",0xA,
     db "Process 7 : Calculate sum of prime n natural numbers",0xA,
-    db "Process 8",0xA,
+    db "Process 8 : Calculate sum of prime n odd numbers",0xA,
     db "Process 9",0xA,
     db "Process 10",0xA,
     db "Exit (11)",0xA,
@@ -46,6 +46,7 @@ section .data
     rand_numb db "Random numbers: ",0xA,0xD
     rand_len equ $- rand_numb
 
+; should probably reuse variables more
 section .bss
     number resb 32
     number2 resb 32
@@ -470,6 +471,49 @@ process_7:
     jmp end
     
 process_8:
+    mov rax, introduce
+    call _print
+    mov rax, number
+    call _clearString
+    mov rax, seed
+    call _clearString
+
+    mov byte [number2],0
+    mov byte [seed], 0
+    mov rax,0
+    lea rdi, [format2]
+    lea rsi, [number]
+    call scanf
+    
+    mov rbx,2
+    sumFirstNPrimes2:
+    inc rbx
+    mov rcx,2
+    cmp rbx, 2
+    je isPrime
+    findIfPrime2:
+    xor rdx,rdx
+    mov rax, rbx
+    div rcx
+    cmp rdx, 0
+    je sumFirstNPrimes2
+    inc rcx
+    cmp rcx, rbx
+    jl findIfPrime2
+    
+    isPrime2:    
+    add byte [number2], 1
+    add [seed], rbx
+    mov rax, [number2]
+    cmp rax, [number]
+    jl sumFirstNPrimes2
+    xor rax,rax
+    mov rax, foundSumPrime
+    call _print
+    mov rax, [seed]
+    call _printRAX
+ 
+    jmp end
     
 process_9:
 
