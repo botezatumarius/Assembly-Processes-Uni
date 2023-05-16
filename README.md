@@ -13,5 +13,5 @@
   <li>Remove spaces from a string</li>
 </ul>
 <br />
-The number generator creates the same sequence of random numbers every time the program is run. To generate a new batch one must change the seed that is in the
+The number generator generates numbers between 1-56 and creates the same sequence of random numbers every time the program is run. To generate a new batch one must change the seed that is in the
 eax register in the subroutine "process_0".
